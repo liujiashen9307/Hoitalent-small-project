@@ -6,6 +6,8 @@ library(SnowballC)
 library(plotly)
 library(sqldf)
 library(ggplot2)
+library(wordcloud)
+library(RColorBrewer)
 df <- read.csv('HT.csv')
 shinyServer(function(input,output){
  rec_form <- reactive({
@@ -37,6 +39,7 @@ shinyServer(function(input,output){
   
   
   dashboard <- reactive({
+    
     lst<- c(as.character(input$bg1),as.character(input$bg2))
     index <- c()
     for(i in 1:length(df[,1])){
@@ -46,6 +49,7 @@ shinyServer(function(input,output){
        index <- c(index,i)
   }
     }
+    
   frame <- df[index,]
   frame
   })
@@ -68,6 +72,7 @@ shinyServer(function(input,output){
       name = "Extra Background Except for Your Background",
       type = "bar"
     )
+    
     p
   })
   output$plot2<-renderPlotly({
@@ -86,13 +91,14 @@ shinyServer(function(input,output){
   output$plot3 <- renderPlotly({
      data <- dashboard()[,'Company']
      data <- data.frame(Company = data)
-     data <- sqldf('Select Company, count(Company) as Count from data group by Company')
+     data <- sqldf('Select Company, count(Company) as Count from data group by Company order by Count desc')
      p <- plot_ly(
        x = data[,1],
        y = data[,2],
        name = "Companies that want to recruit people with your background",
        type = "bar"
      )
+     
      p
     
     
@@ -130,24 +136,42 @@ shinyServer(function(input,output){
       name = "Extra Language Required for the positions matching your Background",
       type = "bar"
     )
+    
     p
   })
   
   output$plot6 <- renderPlotly({
     
+    
     data <- dashboard()[,'Degree']
     data <- data.frame(Degree = data)
     data <- sqldf('Select Degree, count(Degree) as Count from data group by Degree')
-    p<-plot_ly(data,labels = ~Degree, values = ~Count) %>%
+   p<- plot_ly(data,labels = ~Degree, values = ~Count) %>%
       add_pie() %>%
       layout(title = "Pie charts of Minimum Degree Requirement",  showlegend = T,
              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-    
-    p
-    
-    
+  
+  p
     
   })
+  
+  output$plot7 <- renderPlot({
+    dt <- dashboard()
+    corpus <- Corpus(VectorSource(dt$Clean_Description))
+    corpus<- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus,content_transformer(tolower))
+    terms <-TermDocumentMatrix(corpus)
+    mat.df <- as.data.frame(data.matrix(terms), stringsAsfactors = FALSE)
+    ap.v <- sort(rowSums(mat.df),decreasing=TRUE)
+    ap.d <- data.frame(word = names(ap.v),freq=ap.v)
+    pal2 <- brewer.pal(8,"Dark2")
+    ap.d <- ap.d[ap.d$freq>=300,]
+    wordcloud(ap.d$word,ap.d$freq, scale=c(4,0.5),max.words=Inf,random.order=FALSE, rot.per=0.15, colors=pal2)
+    
+  
+    
+  })
+  
   
 })
