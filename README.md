@@ -13,3 +13,7 @@ Web- Scraping script for data collection
 App is divided into two parts. Part One: Dashboard about relevant position. Part Two: Small Searching enginee, or recommender, based on the key words you search for the job.
 
 App Link: https://liujiashen93.shinyapps.io/Hoitalent-small-project/
+
+# Part 3: Labelling Experience
+
+Using machine learning technique to label required experience by job description.
