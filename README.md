@@ -17,3 +17,5 @@ App Link: https://liujiashen93.shinyapps.io/Hoitalent-small-project/
 # Part 3: Labelling Experience
 
 Using machine learning technique to label required experience by job description.
+
+![Alt text](/relative/path/to/Pre-processing job description.png?raw=true "Optional Title")
